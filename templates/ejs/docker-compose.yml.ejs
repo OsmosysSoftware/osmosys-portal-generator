@@ -1,0 +1,9 @@
+services:
+  portal:
+    container_name: <%= name %>
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '127.0.0.1:<%= port %>:80'
+    restart: unless-stopped

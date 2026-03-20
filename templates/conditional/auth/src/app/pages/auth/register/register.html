@@ -1,0 +1,80 @@
+<p-toast />
+<app-floating-configurator />
+<div class="bg-surface-50 dark:bg-surface-950 flex items-center justify-center min-h-screen min-w-screen overflow-hidden">
+  <div class="flex flex-col items-center justify-center">
+    <div
+      style="
+        border-radius: 56px;
+        padding: 0.3rem;
+        background: linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%);
+      "
+    >
+      <div class="w-full bg-surface-0 dark:bg-surface-900 py-20 px-8 sm:px-20" style="border-radius: 53px">
+        <div class="text-center mb-8">
+          <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Create Account</div>
+          <span class="text-muted-color font-medium">Sign up to get started</span>
+        </div>
+
+        <div>
+          <label for="name" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Name</label>
+          <input
+            pInputText
+            id="name"
+            type="text"
+            placeholder="Full name"
+            class="w-full md:w-120 mb-8"
+            [ngModel]="name()"
+            (ngModelChange)="name.set($event)"
+          />
+
+          <label for="email" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Email</label>
+          <input
+            pInputText
+            id="email"
+            type="email"
+            placeholder="Email address"
+            class="w-full md:w-120 mb-8"
+            [ngModel]="email()"
+            (ngModelChange)="email.set($event)"
+          />
+
+          <label for="password" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Password</label>
+          <p-password
+            id="password"
+            [ngModel]="password()"
+            (ngModelChange)="password.set($event)"
+            placeholder="Password"
+            [toggleMask]="true"
+            styleClass="mb-4"
+            [fluid]="true"
+          />
+
+          <div class="flex items-center mt-2 mb-8">
+            <p-checkbox
+              [ngModel]="acceptTerms()"
+              (ngModelChange)="acceptTerms.set($event)"
+              id="terms"
+              [binary]="true"
+              class="mr-2"
+            />
+            <label for="terms">
+              I agree to the <a class="text-primary cursor-pointer font-medium">terms and conditions</a>
+            </label>
+          </div>
+
+          <p-button
+            label="Sign Up"
+            styleClass="w-full mb-4"
+            [loading]="loading()"
+            (onClick)="onRegister()"
+          />
+
+          <div class="text-center">
+            <span class="text-muted-color">Already have an account? </span>
+            <a routerLink="/auth/login" class="text-primary font-medium cursor-pointer">Sign in</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

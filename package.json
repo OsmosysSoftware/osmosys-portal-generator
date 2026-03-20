@@ -1,0 +1,20 @@
+{
+  "name": "@osmosys/portal-generator",
+  "version": "1.0.0",
+  "description": "Scaffold production-ready Angular portal projects with Osmosys standards",
+  "type": "module",
+  "bin": {
+    "osmosys-portal": "./bin/generate.js"
+  },
+  "scripts": {
+    "generate": "node bin/generate.js"
+  },
+  "keywords": ["angular", "primeng", "scaffold", "generator", "osmosys"],
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^13.0.0",
+    "@inquirer/prompts": "^7.0.0",
+    "ejs": "^3.1.10",
+    "chalk": "^5.4.0"
+  }
+}

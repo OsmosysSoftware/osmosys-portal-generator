@@ -49,20 +49,26 @@ A complete Angular 21 project built on [sakai-ng](https://github.com/primefaces/
 - **Code reviewer subagent** — reviews code against Angular 21 patterns
 - **OpenAPI type generation** — `npm run generate:api` to sync types from backend
 
-## Usage
-
-### Interactive Mode
+## Setup
 
 ```bash
-npx @osmosys/portal-generator
+git clone https://github.com/OsmosysSoftware/osmosys-portal-generator.git
+cd osmosys-portal-generator
+npm install
 ```
 
-Prompts for: project name, prefix, description, port, API URL, auth.
+## Usage
 
-### CLI Flags
+### Interactive mode (prompts for all options)
 
 ```bash
-npx @osmosys/portal-generator \
+node bin/generate.js
+```
+
+### Non-interactive mode (all options via flags)
+
+```bash
+node bin/generate.js \
   --name acme-portal \
   --prefix acme \
   --description "Acme admin portal" \

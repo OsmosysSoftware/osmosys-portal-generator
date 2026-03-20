@@ -140,12 +140,16 @@ ng generate service features/users/services/users
 
 ## Built With
 
-- [sakai-ng](https://github.com/primefaces/sakai-ng) — PrimeNG admin template
-- [Angular CLI](https://angular.dev/cli) — project scaffolding
+This generator creates projects based on [sakai-ng](https://github.com/primefaces/sakai-ng), the official Angular admin template by PrimeTek. It uses Angular CLI under the hood and overlays sakai-ng's layout, components, and styles on top of the generated project.
+
+- [sakai-ng](https://github.com/primefaces/sakai-ng) — PrimeNG admin template (layout, SCSS, components)
+- [Angular CLI](https://angular.dev/cli) — base project scaffolding
 - [PrimeNG](https://primeng.org) — UI components
 - [Tailwind CSS](https://tailwindcss.com) — utility-first CSS
 - [openapi-typescript](https://github.com/drwpow/openapi-typescript) — API type generation
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE) for details.
+
+sakai-ng is licensed under the [MIT License](https://github.com/primefaces/sakai-ng/blob/main/LICENSE) by PrimeTek.

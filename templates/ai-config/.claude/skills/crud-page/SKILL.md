@@ -174,7 +174,7 @@ getStatusSeverity(status: string): Severity {
     </form>
     <ng-template #footer>
       <p-button label="Cancel" severity="secondary" [text]="true" (onClick)="dialogVisible.set(false)" />
-      <p-button label="Save" icon="pi pi-check" [disabled]="itemForm.invalid" [loading]="saving()" (onClick)="save()" />
+      <p-button label="Save" icon="pi pi-check" [disabled]="itemForm.invalid || itemForm.pristine" [loading]="saving()" (onClick)="save()" />
     </ng-template>
   </p-dialog>
 

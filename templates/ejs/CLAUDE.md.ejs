@@ -296,7 +296,7 @@ save(): void {
     }
   </div>
 
-  <p-button label="Save" [disabled]="userForm.invalid" (onClick)="save()" />
+  <p-button label="Save" [disabled]="userForm.invalid || userForm.pristine" (onClick)="save()" />
 </form>
 ```
 
@@ -405,6 +405,7 @@ Registered in `app.config.ts` in this order:
 - NEVER use Template-driven Forms (`FormsModule` + `ngModel`) for forms with validation → use Reactive Forms (`ReactiveFormsModule`)
 - ALWAYS use `FormBuilder` + `formGroup` + `formControlName` for any form with 2+ fields or validation
 - ALWAYS use built-in `Validators` (required, email, minLength, etc.) — NEVER write manual `isFormValid()` methods
+- ALWAYS disable Save buttons with `[disabled]="form.invalid || form.pristine"` — prevents saving when no changes made
 - ALWAYS give component methods explicit return types matching what PrimeNG/template expects
 - ALWAYS use typed maps (`Record<string, Severity>`) for status-to-UI-property lookups
 

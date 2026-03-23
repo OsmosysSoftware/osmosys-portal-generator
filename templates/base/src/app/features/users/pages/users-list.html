@@ -186,7 +186,7 @@
       <p-button
         label="Save"
         icon="pi pi-check"
-        [disabled]="userForm.invalid"
+        [disabled]="userForm.invalid || userForm.pristine"
         [loading]="saving()"
         (onClick)="save()"
       />

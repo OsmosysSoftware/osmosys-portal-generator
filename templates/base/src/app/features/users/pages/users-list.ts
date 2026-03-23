@@ -3,8 +3,9 @@ import {
   ChangeDetectionStrategy,
   signal,
   viewChild,
+  inject,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { Table, TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
@@ -35,6 +36,8 @@ interface RoleOption {
   value: number;
 }
 
+type Severity = 'success' | 'info' | 'warn' | 'danger' | 'secondary';
+
 const ROLE_LABELS: Record<number, string> = {
   0: 'User',
   1: 'Admin',
@@ -43,7 +46,7 @@ const ROLE_LABELS: Record<number, string> = {
 @Component({
   selector: 'app-users-list',
   imports: [
-    FormsModule,
+    ReactiveFormsModule,
     DatePipe,
     TableModule,
     TagModule,
@@ -64,6 +67,10 @@ const ROLE_LABELS: Record<number, string> = {
   styleUrl: './users-list.scss',
 })
 export class UsersListComponent {
+  private readonly fb = inject(FormBuilder);
+  private readonly messageService = inject(MessageService);
+  private readonly confirmationService = inject(ConfirmationService);
+
   readonly dt = viewChild<Table>('dt');
 
   // Demo data — replace with API calls
@@ -75,23 +82,26 @@ export class UsersListComponent {
   ]);
 
   readonly saving = signal(false);
-
-  // Dialog state
   readonly dialogVisible = signal(false);
   readonly editingUser = signal<User | null>(null);
-  readonly formEmail = signal('');
-  readonly formFirstName = signal('');
-  readonly formLastName = signal('');
-  readonly formPassword = signal('');
-  readonly formRole = signal<number>(0);
+
+  readonly userForm = this.fb.group({
+    email: ['', [Validators.required, Validators.email]],
+    first_name: [''],
+    last_name: [''],
+    password: ['', [Validators.required, Validators.minLength(6)]],
+    role: [0, Validators.required],
+  });
 
   readonly roleOptions: RoleOption[] = [
     { label: 'User', value: 0 },
     { label: 'Admin', value: 1 },
   ];
 
-  private readonly messageService = new MessageService();
-  private readonly confirmationService = new ConfirmationService();
+  private readonly statusSeverityMap: Record<number, Severity> = {
+    1: 'success',
+    0: 'danger',
+  };
 
   onGlobalFilter(event: Event): void {
     this.dt()?.filterGlobal((event.target as HTMLInputElement).value, 'contains');
@@ -99,46 +109,37 @@ export class UsersListComponent {
 
   openCreate(): void {
     this.editingUser.set(null);
-    this.formEmail.set('');
-    this.formFirstName.set('');
-    this.formLastName.set('');
-    this.formPassword.set('');
-    this.formRole.set(0);
+    this.userForm.reset({ email: '', first_name: '', last_name: '', password: '', role: 0 });
+    this.userForm.controls.password.setValidators([Validators.required, Validators.minLength(6)]);
+    this.userForm.controls.password.updateValueAndValidity();
     this.dialogVisible.set(true);
   }
 
   openEdit(user: User): void {
     this.editingUser.set(user);
-    this.formEmail.set(user.email);
-    this.formFirstName.set(user.first_name || '');
-    this.formLastName.set(user.last_name || '');
-    this.formPassword.set('');
-    this.formRole.set(user.role);
+    this.userForm.patchValue({
+      email: user.email,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      password: '',
+      role: user.role,
+    });
+    this.userForm.controls.password.clearValidators();
+    this.userForm.controls.password.setValidators([Validators.minLength(6)]);
+    this.userForm.controls.password.updateValueAndValidity();
     this.dialogVisible.set(true);
   }
 
-  isFormValid(): boolean {
-    const email = this.formEmail().trim();
-
-    if (!email) {
-      return false;
-    }
-
-    if (!this.editingUser() && !this.formPassword().trim()) {
-      return false;
-    }
-
-    return this.formRole() !== null && this.formRole() !== undefined;
-  }
-
   save(): void {
-    if (!this.isFormValid()) {
+    this.userForm.markAllAsTouched();
+    if (this.userForm.invalid) {
       return;
     }
 
-    // TODO: Replace with API call
+    const formValue = this.userForm.getRawValue();
     this.saving.set(true);
 
+    // TODO: Replace with API call
     setTimeout(() => {
       const editing = this.editingUser();
 
@@ -148,26 +149,28 @@ export class UsersListComponent {
             u.id === editing.id
               ? {
                   ...u,
-                  email: this.formEmail().trim(),
-                  first_name: this.formFirstName().trim(),
-                  last_name: this.formLastName().trim(),
-                  role: this.formRole(),
+                  email: formValue.email ?? '',
+                  first_name: formValue.first_name ?? '',
+                  last_name: formValue.last_name ?? '',
+                  role: formValue.role ?? 0,
                 }
               : u,
           ),
         );
+        this.messageService.add({ severity: 'success', summary: 'Updated', detail: 'User updated successfully' });
       } else {
         const newUser: User = {
           id: Math.max(...this.users().map((u) => u.id)) + 1,
-          email: this.formEmail().trim(),
-          first_name: this.formFirstName().trim(),
-          last_name: this.formLastName().trim(),
-          role: this.formRole(),
+          email: formValue.email ?? '',
+          first_name: formValue.first_name ?? '',
+          last_name: formValue.last_name ?? '',
+          role: formValue.role ?? 0,
           status: 1,
           created_on: new Date().toISOString(),
         };
 
         this.users.update((list) => [...list, newUser]);
+        this.messageService.add({ severity: 'success', summary: 'Created', detail: 'User created successfully' });
       }
 
       this.dialogVisible.set(false);
@@ -185,8 +188,21 @@ export class UsersListComponent {
     return ROLE_LABELS[role] || 'Unknown';
   }
 
+  getStatusSeverity(status: number): Severity {
+    return this.statusSeverityMap[status] ?? 'info';
+  }
+
   confirmDelete(user: User): void {
-    // TODO: Replace with API call + ConfirmationService
-    this.users.update((list) => list.filter((u) => u.id !== user.id));
+    this.confirmationService.confirm({
+      message: `Are you sure you want to delete "${this.getDisplayName(user)}"?`,
+      header: 'Confirm Delete',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        // TODO: Replace with API call
+        this.users.update((list) => list.filter((u) => u.id !== user.id));
+        this.messageService.add({ severity: 'success', summary: 'Deleted', detail: 'User deleted successfully' });
+      },
+    });
   }
 }

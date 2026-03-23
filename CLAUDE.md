@@ -58,3 +58,15 @@ getSeverity(status: string): Severity {
 ### No Explicit `any` in TypeScript
 
 NEVER use `any` type in TypeScript files. Use proper types, generics, or `unknown` with type guards.
+
+### Reactive Forms Only — No Template-Driven Forms
+
+All forms in `templates/` MUST use **Reactive Forms** (`ReactiveFormsModule`, `FormBuilder`, `formGroup`, `formControlName`).
+
+NEVER use:
+
+- `FormsModule` + `[ngModel]` / `(ngModelChange)` for forms with validation
+- Individual signals per form field (e.g., `formEmail = signal('')`)
+- Manual `isFormValid()` methods — use `form.invalid` instead
+
+**Exception:** Simple one-field bindings (search input, toggle) without validation may use `[ngModel]`/`(ngModelChange)` with signals.

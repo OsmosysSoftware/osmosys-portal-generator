@@ -246,6 +246,62 @@ getSeverity(status: string): Severity {
 <p-tag [severity]="getSeverity(item.status)" [value]="item.status" />
 ```
 
+### Forms — Reactive Forms Only (REQUIRED)
+
+ALWAYS use **Reactive Forms** (`ReactiveFormsModule`). NEVER use Template-driven Forms (`FormsModule` + `ngModel`) for any form with validation or more than one field.
+
+**Why:** Reactive Forms are testable, type-safe, and provide built-in validation — template-driven forms with manual `isFormValid()` methods don't scale and bypass Angular's form system.
+
+```typescript
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+
+// In component class
+private readonly fb = inject(FormBuilder);
+
+readonly userForm = this.fb.group({
+  email: ['', [Validators.required, Validators.email]],
+  first_name: [''],
+  last_name: [''],
+  password: ['', [Validators.required, Validators.minLength(6)]],
+  role: [0, Validators.required],
+});
+
+// Patch form for editing
+openEdit(user: User): void {
+  this.userForm.patchValue(user);
+  this.userForm.controls.password.clearValidators();  // optional on edit
+  this.userForm.controls.password.updateValueAndValidity();
+  this.dialogVisible.set(true);
+}
+
+// Submit
+save(): void {
+  if (this.userForm.invalid) return;
+  const value = this.userForm.getRawValue();
+  // ... API call
+}
+```
+
+```html
+<!-- Template — bind with formControlName, show errors with hasError -->
+<form [formGroup]="userForm">
+  <div class="flex flex-col gap-2">
+    <label for="email" class="font-medium">Email *</label>
+    <input pInputText id="email" formControlName="email" placeholder="user@example.com" />
+    @if (userForm.controls.email.touched && userForm.controls.email.hasError('required')) {
+      <small class="text-red-500">Email is required</small>
+    }
+    @if (userForm.controls.email.touched && userForm.controls.email.hasError('email')) {
+      <small class="text-red-500">Invalid email format</small>
+    }
+  </div>
+
+  <p-button label="Save" [disabled]="userForm.invalid" (onClick)="save()" />
+</form>
+```
+
+**Exception:** Simple one-field bindings (e.g., search input, toggle) may use `[ngModel]`/`(ngModelChange)` with signals when no validation is needed.
+
 ### Service Pattern (REQUIRED)
 
 ```typescript
@@ -346,6 +402,9 @@ Registered in `app.config.ts` in this order:
 - ALWAYS use standalone components (NO NgModules)
 - ALWAYS use separate template files (`templateUrl`, NOT inline `template`)
 - NEVER use `$any()` in templates to silence type errors → fix the type in the component instead
+- NEVER use Template-driven Forms (`FormsModule` + `ngModel`) for forms with validation → use Reactive Forms (`ReactiveFormsModule`)
+- ALWAYS use `FormBuilder` + `formGroup` + `formControlName` for any form with 2+ fields or validation
+- ALWAYS use built-in `Validators` (required, email, minLength, etc.) — NEVER write manual `isFormValid()` methods
 - ALWAYS give component methods explicit return types matching what PrimeNG/template expects
 - ALWAYS use typed maps (`Record<string, Severity>`) for status-to-UI-property lookups
 

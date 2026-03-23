@@ -57,10 +57,85 @@ ng generate service features/<feature-name>/services/<feature-name>
 
 - `ChangeDetectionStrategy.OnPush`
 - `inject()` for DI — NOT constructor injection
-- `signal()` / `computed()` for state
+- `signal()` / `computed()` for component state (loading, dialogVisible, etc.)
 - `@if` / `@for` in templates — NOT `*ngIf` / `*ngFor`
 - `templateUrl` — NO inline template
 - `viewChild<Table>('dt')` for table reference
+- **Reactive Forms** (`ReactiveFormsModule`) — NOT template-driven forms
+- **Typed severity maps** (`Record<string, Severity>`) — NOT inline ternaries for status badges
+- **ConfirmationService** for delete — NOT direct deletion
+- **MessageService** for toast notifications on create/update/delete success
+
+### Form pattern (REQUIRED — Reactive Forms)
+
+```typescript
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+
+// In component
+private readonly fb = inject(FormBuilder);
+
+readonly itemForm = this.fb.group({
+  name: ['', Validators.required],
+  email: ['', [Validators.required, Validators.email]],
+  status: [0, Validators.required],
+});
+
+openCreate(): void {
+  this.editingItem.set(null);
+  this.itemForm.reset({ name: '', email: '', status: 0 });
+  this.dialogVisible.set(true);
+}
+
+openEdit(item: Item): void {
+  this.editingItem.set(item);
+  this.itemForm.patchValue(item);
+  this.dialogVisible.set(true);
+}
+
+save(): void {
+  this.itemForm.markAllAsTouched();
+  if (this.itemForm.invalid) return;
+  const value = this.itemForm.getRawValue();
+  // ... API call with value
+}
+```
+
+```html
+<!-- In template — use formGroup and formControlName -->
+<form [formGroup]="itemForm">
+  <div class="flex flex-col gap-2">
+    <label for="name" class="font-medium">Name *</label>
+    <input pInputText id="name" formControlName="name" />
+    @if (itemForm.controls.name.touched && itemForm.controls.name.hasError('required')) {
+      <small class="text-red-500">Name is required</small>
+    }
+  </div>
+</form>
+```
+
+**NEVER** use `FormsModule` + `[ngModel]` + `(ngModelChange)` + individual signals for form fields.
+**NEVER** write manual `isFormValid()` methods — use `this.form.invalid` instead.
+
+### Typed severity pattern (REQUIRED)
+
+```typescript
+type Severity = 'success' | 'info' | 'warn' | 'danger' | 'secondary';
+
+private readonly statusSeverityMap: Record<string, Severity> = {
+  active: 'success',
+  inactive: 'danger',
+  pending: 'warn',
+};
+
+getStatusSeverity(status: string): Severity {
+  return this.statusSeverityMap[status] ?? 'info';
+}
+```
+
+```html
+<!-- NEVER use inline ternaries for severity — use typed maps -->
+<p-tag [value]="item.status" [severity]="getStatusSeverity(item.status)" />
+```
 
 ### Template structure
 
@@ -76,21 +151,63 @@ ng generate service features/<feature-name>/services/<feature-name>
   </p-toolbar>
 
   <!-- Table -->
-  @if (loading()) { <p-skeleton /> }
+  @if (loading()) { <p-skeleton height="300px" /> }
   @else {
     <p-table #dt [value]="items()" [paginator]="true" [rows]="10"
       [stripedRows]="true" [rowHover]="true"
-      [sortField]="'default_field'" [sortOrder]="-1">
+      [sortField]="'default_field'" [sortOrder]="-1"
+      [globalFilterFields]="['field1', 'field2']"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} items"
+      [rowsPerPageOptions]="[10, 20, 50]">
       #header: column headers with pSortableColumn
-      #body: data rows with action buttons
+      #body: data rows with edit/delete action buttons
       #emptymessage: "No items found"
     </p-table>
   }
 
-  <!-- CRUD dialogs -->
-  <p-dialog [visible]="dialogVisible()" ... />
+  <!-- CRUD dialog with Reactive Form -->
+  <p-dialog [visible]="dialogVisible()" (visibleChange)="dialogVisible.set($event)"
+    [header]="editingItem() ? 'Edit Item' : 'New Item'" [modal]="true">
+    <form [formGroup]="itemForm">
+      <!-- formControlName fields with validation messages -->
+    </form>
+    <ng-template #footer>
+      <p-button label="Cancel" severity="secondary" [text]="true" (onClick)="dialogVisible.set(false)" />
+      <p-button label="Save" icon="pi pi-check" [disabled]="itemForm.invalid" [loading]="saving()" (onClick)="save()" />
+    </ng-template>
+  </p-dialog>
+
   <p-confirmDialog />
 </div>
+```
+
+### Delete pattern (REQUIRED)
+
+```typescript
+private readonly confirmationService = inject(ConfirmationService);
+private readonly messageService = inject(MessageService);
+
+confirmDelete(item: Item): void {
+  this.confirmationService.confirm({
+    message: `Are you sure you want to delete "${item.name}"?`,
+    header: 'Confirm Delete',
+    icon: 'pi pi-exclamation-triangle',
+    acceptButtonStyleClass: 'p-button-danger',
+    accept: () => {
+      this.featureService.delete(item.id).subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Deleted',
+            detail: `"${item.name}" deleted successfully`,
+          });
+          this.loadItems();
+        },
+      });
+    },
+  });
+}
 ```
 
 ### Service pattern

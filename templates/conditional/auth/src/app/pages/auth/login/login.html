@@ -15,35 +15,44 @@
           <span class="text-muted-color font-medium">Sign in to continue</span>
         </div>
 
-        <div>
+        <form [formGroup]="loginForm">
           <label for="email" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Email</label>
           <input
             pInputText
             id="email"
             type="email"
             placeholder="Email address"
-            class="w-full md:w-120 mb-8"
-            [ngModel]="email()"
-            (ngModelChange)="email.set($event)"
+            class="w-full md:w-120 mb-2"
+            formControlName="email"
           />
+          @if (loginForm.controls.email.touched && loginForm.controls.email.hasError('required')) {
+            <small class="text-red-500 block mb-4">Email is required</small>
+          } @else if (loginForm.controls.email.touched && loginForm.controls.email.hasError('email')) {
+            <small class="text-red-500 block mb-4">Invalid email format</small>
+          } @else {
+            <div class="mb-6"></div>
+          }
 
           <label for="password" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Password</label>
           <p-password
             id="password"
-            [ngModel]="password()"
-            (ngModelChange)="password.set($event)"
+            formControlName="password"
             placeholder="Password"
             [toggleMask]="true"
-            styleClass="mb-4"
+            styleClass="mb-2"
             [fluid]="true"
             [feedback]="false"
           />
+          @if (loginForm.controls.password.touched && loginForm.controls.password.hasError('required')) {
+            <small class="text-red-500 block mb-2">Password is required</small>
+          } @else {
+            <div class="mb-2"></div>
+          }
 
           <div class="flex items-center justify-between mt-2 mb-8 gap-8">
             <div class="flex items-center">
               <p-checkbox
-                [ngModel]="rememberMe()"
-                (ngModelChange)="rememberMe.set($event)"
+                formControlName="rememberMe"
                 id="rememberme"
                 [binary]="true"
                 class="mr-2"
@@ -59,20 +68,20 @@
             [loading]="loading()"
             (onClick)="onLogin()"
           />
+        </form>
 
-          <!-- Demo credentials — remove once your backend is configured -->
-          <div class="mt-6 p-4 bg-surface-100 dark:bg-surface-800 rounded-lg">
-            <div class="text-sm text-muted-color mb-2 font-medium">Demo credentials:</div>
-            <div class="text-sm text-muted-color mb-1">
-              <span class="font-medium">Admin:</span>
-              <button type="button" class="text-primary cursor-pointer bg-transparent border-none p-0 font-mono text-sm" (click)="email.set('admin@example.com'); password.set('password')">admin&#64;example.com</button>
-              / <span class="font-mono text-sm">password</span>
-            </div>
-            <div class="text-sm text-muted-color">
-              <span class="font-medium">User:</span>
-              <button type="button" class="text-primary cursor-pointer bg-transparent border-none p-0 font-mono text-sm" (click)="email.set('user@example.com'); password.set('password')">user&#64;example.com</button>
-              / <span class="font-mono text-sm">password</span>
-            </div>
+        <!-- Demo credentials — remove once your backend is configured -->
+        <div class="mt-6 p-4 bg-surface-100 dark:bg-surface-800 rounded-lg">
+          <div class="text-sm text-muted-color mb-2 font-medium">Demo credentials:</div>
+          <div class="text-sm text-muted-color mb-1">
+            <span class="font-medium">Admin:</span>
+            <button type="button" class="text-primary cursor-pointer bg-transparent border-none p-0 font-mono text-sm" (click)="fillDemoCredentials('admin@example.com', 'password')">admin&#64;example.com</button>
+            / <span class="font-mono text-sm">password</span>
+          </div>
+          <div class="text-sm text-muted-color">
+            <span class="font-medium">User:</span>
+            <button type="button" class="text-primary cursor-pointer bg-transparent border-none p-0 font-mono text-sm" (click)="fillDemoCredentials('user@example.com', 'password')">user&#64;example.com</button>
+            / <span class="font-mono text-sm">password</span>
           </div>
         </div>
       </div>

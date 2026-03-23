@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, signal, inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
@@ -17,7 +17,7 @@ import { AppFloatingConfigurator } from '../../../layout/component/app.floatingc
     InputTextModule,
     PasswordModule,
     CheckboxModule,
-    FormsModule,
+    ReactiveFormsModule,
     RouterModule,
     ToastModule,
     AppFloatingConfigurator,
@@ -30,20 +30,27 @@ import { AppFloatingConfigurator } from '../../../layout/component/app.floatingc
 export class RegisterComponent {
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
+  private readonly fb = inject(FormBuilder);
 
-  readonly name = signal('');
-  readonly email = signal('');
-  readonly password = signal('');
-  readonly acceptTerms = signal(false);
+  readonly registerForm = this.fb.group({
+    name: ['', Validators.required],
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(6)]],
+    acceptTerms: [false, Validators.requiredTrue],
+  });
+
   readonly loading = signal(false);
 
   onRegister(): void {
-    if (!this.acceptTerms()) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Terms Required',
-        detail: 'Please accept the terms and conditions',
-      });
+    this.registerForm.markAllAsTouched();
+    if (this.registerForm.invalid) {
+      if (this.registerForm.controls.acceptTerms.hasError('required')) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Terms Required',
+          detail: 'Please accept the terms and conditions',
+        });
+      }
 
       return;
     }
@@ -51,7 +58,7 @@ export class RegisterComponent {
     this.loading.set(true);
 
     // TODO: Wire up registration API call
-    // this.authService.register({ name: this.name(), email: this.email(), password: this.password() })
+    // this.authService.register(this.registerForm.getRawValue())
     this.messageService.add({
       severity: 'info',
       summary: 'Registration',

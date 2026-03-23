@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, signal, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
@@ -18,7 +18,7 @@ import { AuthService } from '../../../core/services/auth.service';
     CheckboxModule,
     InputTextModule,
     PasswordModule,
-    FormsModule,
+    ReactiveFormsModule,
     ToastModule,
     AppFloatingConfigurator,
   ],
@@ -31,10 +31,14 @@ export class LoginComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
+  private readonly fb = inject(FormBuilder);
 
-  readonly email = signal('');
-  readonly password = signal('');
-  readonly rememberMe = signal(false);
+  readonly loginForm = this.fb.group({
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', Validators.required],
+    rememberMe: [false],
+  });
+
   readonly loading = signal(false);
 
   /**
@@ -43,15 +47,26 @@ export class LoginComponent {
    */
   private readonly DEMO_MODE = true;
 
+  fillDemoCredentials(email: string, password: string): void {
+    this.loginForm.patchValue({ email, password });
+  }
+
   onLogin(): void {
-    if (this.DEMO_MODE && this.email() === 'admin@example.com' && this.password() === 'password') {
+    this.loginForm.markAllAsTouched();
+    if (this.loginForm.invalid) {
+      return;
+    }
+
+    const { email, password } = this.loginForm.getRawValue();
+
+    if (this.DEMO_MODE && email === 'admin@example.com' && password === 'password') {
       this.router.navigate(['/']);
 
       return;
     }
 
     this.loading.set(true);
-    this.authService.login({ email: this.email(), password: this.password() }).subscribe({
+    this.authService.login({ email: email ?? '', password: password ?? '' }).subscribe({
       next: () => {
         this.router.navigate(['/']);
       },

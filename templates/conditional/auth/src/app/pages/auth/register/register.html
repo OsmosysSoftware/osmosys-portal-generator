@@ -15,17 +15,21 @@
           <span class="text-muted-color font-medium">Sign up to get started</span>
         </div>
 
-        <div>
+        <form [formGroup]="registerForm">
           <label for="name" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Name</label>
           <input
             pInputText
             id="name"
             type="text"
             placeholder="Full name"
-            class="w-full md:w-120 mb-8"
-            [ngModel]="name()"
-            (ngModelChange)="name.set($event)"
+            class="w-full md:w-120 mb-2"
+            formControlName="name"
           />
+          @if (registerForm.controls.name.touched && registerForm.controls.name.hasError('required')) {
+            <small class="text-red-500 block mb-4">Name is required</small>
+          } @else {
+            <div class="mb-6"></div>
+          }
 
           <label for="email" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Email</label>
           <input
@@ -33,26 +37,37 @@
             id="email"
             type="email"
             placeholder="Email address"
-            class="w-full md:w-120 mb-8"
-            [ngModel]="email()"
-            (ngModelChange)="email.set($event)"
+            class="w-full md:w-120 mb-2"
+            formControlName="email"
           />
+          @if (registerForm.controls.email.touched && registerForm.controls.email.hasError('required')) {
+            <small class="text-red-500 block mb-4">Email is required</small>
+          } @else if (registerForm.controls.email.touched && registerForm.controls.email.hasError('email')) {
+            <small class="text-red-500 block mb-4">Invalid email format</small>
+          } @else {
+            <div class="mb-6"></div>
+          }
 
           <label for="password" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Password</label>
           <p-password
             id="password"
-            [ngModel]="password()"
-            (ngModelChange)="password.set($event)"
+            formControlName="password"
             placeholder="Password"
             [toggleMask]="true"
-            styleClass="mb-4"
+            styleClass="mb-2"
             [fluid]="true"
           />
+          @if (registerForm.controls.password.touched && registerForm.controls.password.hasError('required')) {
+            <small class="text-red-500 block mb-2">Password is required</small>
+          } @else if (registerForm.controls.password.touched && registerForm.controls.password.hasError('minlength')) {
+            <small class="text-red-500 block mb-2">Password must be at least 6 characters</small>
+          } @else {
+            <div class="mb-2"></div>
+          }
 
           <div class="flex items-center mt-2 mb-8">
             <p-checkbox
-              [ngModel]="acceptTerms()"
-              (ngModelChange)="acceptTerms.set($event)"
+              formControlName="acceptTerms"
               id="terms"
               [binary]="true"
               class="mr-2"
@@ -73,7 +88,7 @@
             <span class="text-muted-color">Already have an account? </span>
             <a routerLink="/auth/login" class="text-primary font-medium cursor-pointer">Sign in</a>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   </div>

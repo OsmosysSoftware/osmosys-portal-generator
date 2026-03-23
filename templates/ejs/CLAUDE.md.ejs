@@ -219,6 +219,33 @@ export class ExampleComponent {
 <p>Double: {{ doubleCount() }}</p>
 ```
 
+### Template Type Safety — No `$any()` (REQUIRED)
+
+NEVER use `$any()` to bypass template type checking. Fix the underlying type instead.
+
+```typescript
+// WRONG — $any hides the real type mismatch
+// template: [severity]="$any(getStatus(item))"
+
+// CORRECT — typed map with explicit return type
+type Severity = 'success' | 'info' | 'warn' | 'danger';
+
+private readonly severityMap: Record<string, Severity> = {
+  active: 'success',
+  inactive: 'danger',
+  pending: 'warn',
+};
+
+getSeverity(status: string): Severity {
+  return this.severityMap[status] ?? 'info';
+}
+```
+
+```html
+<!-- Template stays clean — no $any needed -->
+<p-tag [severity]="getSeverity(item.status)" [value]="item.status" />
+```
+
 ### Service Pattern (REQUIRED)
 
 ```typescript
@@ -318,6 +345,9 @@ Registered in `app.config.ts` in this order:
 - ALWAYS use `readonly` for signals and computed values
 - ALWAYS use standalone components (NO NgModules)
 - ALWAYS use separate template files (`templateUrl`, NOT inline `template`)
+- NEVER use `$any()` in templates to silence type errors → fix the type in the component instead
+- ALWAYS give component methods explicit return types matching what PrimeNG/template expects
+- ALWAYS use typed maps (`Record<string, Severity>`) for status-to-UI-property lookups
 
 ### API Type System Rules
 

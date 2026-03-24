@@ -144,6 +144,19 @@ getStatusSeverity(status: string): Severity {
 <p-tag [value]="item.status" [severity]="getStatusSeverity(item.status)" />
 ```
 
+### Osmosys UI Standards (REQUIRED)
+
+- Save/Cancel buttons at **bottom-right** of dialogs and forms
+- `[loading]="saving()"` on submit buttons — prevent double-submission
+- Mark mandatory fields with `*` next to label; show inline errors on validation failure
+- Apply `maxlength` on inputs: text (50), email (256), phone (15), textarea (1000)
+- Server-side pagination for 30+ records; "No records found" for empty tables
+- NEVER show raw database IDs in tables — use meaningful identifiers
+- Disable sorting on Actions column — omit `pSortableColumn`
+- Save table state with `[stateStorage]="'session'"` and `[stateKey]="'feature-table'"`
+- Right-align numeric/monetary columns; format money with 2 decimal places
+- Display times in user's local timezone; store UTC on backend
+
 ### Template structure
 
 ```html
@@ -166,8 +179,9 @@ getStatusSeverity(status: string): Severity {
       [globalFilterFields]="['field1', 'field2']"
       [showCurrentPageReport]="true"
       currentPageReportTemplate="Showing {first} to {last} of {totalRecords} items"
-      [rowsPerPageOptions]="[10, 20, 50]">
-      #header: column headers with pSortableColumn
+      [rowsPerPageOptions]="[10, 20, 50]"
+      [stateStorage]="'session'" [stateKey]="'feature-table'">
+      #header: column headers with pSortableColumn (NOT on Actions column)
       #body: data rows with edit/delete action buttons
       #emptymessage: "No items found"
     </p-table>
@@ -178,9 +192,12 @@ getStatusSeverity(status: string): Severity {
     [header]="editingItem() ? 'Edit Item' : 'New Item'" [modal]="true">
     <form [formGroup]="itemForm" (ngSubmit)="save()">
       <!-- formControlName fields with validation messages -->
+      <!-- Apply maxlength: text=50, email=256, phone=15, textarea=1000 -->
       <ng-template #footer>
-        <p-button label="Cancel" severity="secondary" [text]="true" (onClick)="dialogVisible.set(false)" />
-        <p-button type="submit" label="Save" icon="pi pi-check" [disabled]="itemForm.invalid || itemForm.pristine" [loading]="saving()" />
+        <div class="flex justify-end gap-2">
+          <p-button label="Cancel" severity="secondary" [text]="true" (onClick)="dialogVisible.set(false)" />
+          <p-button type="submit" label="Save" icon="pi pi-check" [disabled]="itemForm.invalid || itemForm.pristine" [loading]="saving()" />
+        </div>
       </ng-template>
     </form>
   </p-dialog>

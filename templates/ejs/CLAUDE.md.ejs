@@ -413,6 +413,34 @@ Registered in `app.config.ts` in this order:
 - ALWAYS give component methods explicit return types matching what PrimeNG/template expects
 - ALWAYS use typed maps (`Record<string, Severity>`) for status-to-UI-property lookups
 
+### Osmosys UI Standards (REQUIRED)
+
+These rules apply to all UI pages — lists, forms, dialogs, and data display.
+
+#### Buttons & Actions
+- Save/Cancel/OK buttons MUST be at the **bottom-right** of dialogs and forms
+- Show `[loading]="saving()"` on submit buttons to prevent double-submission
+- Every dialog/form MUST have both a Cancel button and X close button
+
+#### Forms & Validation
+- Mark mandatory fields with `*` next to the label
+- On validation failure, show inline error messages AND highlight the invalid field
+- Apply `maxlength` on inputs: text (50), email (256), phone (15), description/textarea (1000)
+- Reset form state on dialog close and on successful submit
+
+#### Data Tables
+- Use server-side pagination (`[lazy]="true"`) for datasets with 30+ records
+- Show "No records found" for empty results (`#emptymessage`)
+- NEVER show raw database IDs in tables — use meaningful identifiers (name, code, etc.)
+- Disable sorting on non-sortable columns (e.g., Actions) — omit `pSortableColumn` on those
+- Save table state (search, pagination, sorting) with `[stateStorage]="'session'"` and `[stateKey]`
+- Right-align numeric and monetary columns; format money with 2 decimal places
+
+#### Dates & Times
+- Display all times in user's local timezone using Angular `date` pipe
+- Store dates in UTC on the backend
+- Use consistent date format across the app (e.g., `'short'` or `'medium'`)
+
 ### API Type System Rules
 
 - NEVER create manual interfaces for API entities (use OpenAPI-generated types)

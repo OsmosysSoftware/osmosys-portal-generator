@@ -109,7 +109,7 @@
     [modal]="true"
     [style]="{ width: '28rem' }"
   >
-    <form [formGroup]="userForm" class="flex flex-col gap-4 mt-2">
+    <form [formGroup]="userForm" (ngSubmit)="save()" class="flex flex-col gap-4 mt-2">
       <div class="flex flex-col gap-2">
         <label for="email" class="font-medium">Email <span class="text-red-500">*</span></label>
         <input
@@ -175,22 +175,22 @@
           appendTo="body"
         />
       </div>
+      <ng-template #footer>
+        <p-button
+          label="Cancel"
+          severity="secondary"
+          [text]="true"
+          (onClick)="dialogVisible.set(false)"
+        />
+        <p-button
+          type="submit"
+          label="Save"
+          icon="pi pi-check"
+          [disabled]="userForm.invalid || userForm.pristine"
+          [loading]="saving()"
+        />
+      </ng-template>
     </form>
-    <ng-template #footer>
-      <p-button
-        label="Cancel"
-        severity="secondary"
-        [text]="true"
-        (onClick)="dialogVisible.set(false)"
-      />
-      <p-button
-        label="Save"
-        icon="pi pi-check"
-        [disabled]="userForm.invalid || userForm.pristine"
-        [loading]="saving()"
-        (onClick)="save()"
-      />
-    </ng-template>
   </p-dialog>
 
   <p-confirmDialog />

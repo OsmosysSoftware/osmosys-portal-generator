@@ -70,3 +70,10 @@ NEVER use:
 - Manual `isFormValid()` methods — use `form.invalid` instead
 
 **Exception:** Simple one-field bindings (search input, toggle) without validation may use `[ngModel]`/`(ngModelChange)` with signals.
+
+### Form Submission — `type="submit"` and `(ngSubmit)`
+
+- ALWAYS wrap form fields in a `<form>` tag with `(ngSubmit)="save()"` so Enter key triggers submission
+- ALWAYS use `type="submit"` on the submit `p-button` — PrimeNG buttons default to `type="button"` which won't trigger `ngSubmit`
+- NEVER use `(onClick)` on the submit button when `(ngSubmit)` handles it — avoid double submission
+- When using `ngModel` inside a `<form>`, ALWAYS add a `name` attribute on each control — Angular requires it

@@ -284,7 +284,7 @@ save(): void {
 
 ```html
 <!-- Template — bind with formControlName, show errors with hasError -->
-<form [formGroup]="userForm">
+<form [formGroup]="userForm" (ngSubmit)="save()">
   <div class="flex flex-col gap-2">
     <label for="email" class="font-medium">Email *</label>
     <input pInputText id="email" formControlName="email" placeholder="user@example.com" />
@@ -296,7 +296,7 @@ save(): void {
     }
   </div>
 
-  <p-button label="Save" [disabled]="userForm.invalid || userForm.pristine" (onClick)="save()" />
+  <p-button type="submit" label="Save" [disabled]="userForm.invalid || userForm.pristine" />
 </form>
 ```
 
@@ -406,6 +406,10 @@ Registered in `app.config.ts` in this order:
 - ALWAYS use `FormBuilder` + `formGroup` + `formControlName` for any form with 2+ fields or validation
 - ALWAYS use built-in `Validators` (required, email, minLength, etc.) — NEVER write manual `isFormValid()` methods
 - ALWAYS disable Save buttons with `[disabled]="form.invalid || form.pristine"` — prevents saving when no changes made
+- ALWAYS wrap form fields in `<form>` with `(ngSubmit)="save()"` — enables Enter-key submission
+- ALWAYS use `type="submit"` on the submit `p-button` — PrimeNG defaults to `type="button"` which won't trigger `ngSubmit`
+- NEVER use `(onClick)` on submit buttons when `(ngSubmit)` handles it — avoid double submission
+- ALWAYS add `name` attribute on controls using `ngModel` inside a `<form>` — Angular requires it
 - ALWAYS give component methods explicit return types matching what PrimeNG/template expects
 - ALWAYS use typed maps (`Record<string, Severity>`) for status-to-UI-property lookups
 

@@ -116,6 +116,13 @@ save(): void {
 **NEVER** use `FormsModule` + `[ngModel]` + `(ngModelChange)` + individual signals for form fields.
 **NEVER** write manual `isFormValid()` methods — use `this.form.invalid` instead.
 
+### Form submission rules (REQUIRED)
+
+- ALWAYS wrap form fields in a `<form>` tag with `(ngSubmit)="save()"` so Enter key triggers submission
+- ALWAYS use `type="submit"` on the submit `p-button` — PrimeNG buttons default to `type="button"` which won't trigger `ngSubmit`
+- NEVER use `(onClick)` on the submit button when `(ngSubmit)` handles it — avoid double submission
+- When using `ngModel` inside a `<form>`, ALWAYS add a `name` attribute on each control — Angular requires it
+
 ### Typed severity pattern (REQUIRED)
 
 ```typescript
@@ -169,13 +176,13 @@ getStatusSeverity(status: string): Severity {
   <!-- CRUD dialog with Reactive Form -->
   <p-dialog [visible]="dialogVisible()" (visibleChange)="dialogVisible.set($event)"
     [header]="editingItem() ? 'Edit Item' : 'New Item'" [modal]="true">
-    <form [formGroup]="itemForm">
+    <form [formGroup]="itemForm" (ngSubmit)="save()">
       <!-- formControlName fields with validation messages -->
+      <ng-template #footer>
+        <p-button label="Cancel" severity="secondary" [text]="true" (onClick)="dialogVisible.set(false)" />
+        <p-button type="submit" label="Save" icon="pi pi-check" [disabled]="itemForm.invalid || itemForm.pristine" [loading]="saving()" />
+      </ng-template>
     </form>
-    <ng-template #footer>
-      <p-button label="Cancel" severity="secondary" [text]="true" (onClick)="dialogVisible.set(false)" />
-      <p-button label="Save" icon="pi pi-check" [disabled]="itemForm.invalid || itemForm.pristine" [loading]="saving()" (onClick)="save()" />
-    </ng-template>
   </p-dialog>
 
   <p-confirmDialog />

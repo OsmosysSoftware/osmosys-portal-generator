@@ -3,14 +3,10 @@ import { Router, CanActivateFn } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
 /**
- * Auth guard — bypassed by default for development.
- * Set BYPASS_AUTH to false once your backend auth API is configured.
+ * Auth guard — redirects unauthenticated users to login (preserving the
+ * attempted URL via returnUrl). Auth state is token-based (see AuthService).
  */
-const BYPASS_AUTH = true;
-
 export const authGuard: CanActivateFn = (route, state) => {
-  if (BYPASS_AUTH) return true;
-
   const authService = inject(AuthService);
   const router = inject(Router);
 

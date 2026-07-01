@@ -1,9 +1,12 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+<% if (auth) { -%>
+import { ReloginDialogComponent } from './shared/components/relogin-dialog/relogin-dialog';
+<% } -%>
 
 @Component({
   selector: '<%= prefix %>-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet<% if (auth) { %>, ReloginDialogComponent<% } %>],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

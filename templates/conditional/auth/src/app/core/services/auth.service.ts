@@ -23,11 +23,11 @@ export class AuthService {
   private readonly STORAGE_KEY = 'auth_user';
   private readonly TOKEN_KEY = 'auth_token';
   private readonly REFRESH_TOKEN_KEY = 'auth_refresh_token';
+  private readonly EMAIL_KEY = 'auth_email';
 
   // Signal-based state management
   private readonly currentUser = signal<User | null>(null);
   readonly user = computed(() => this.currentUser());
-  readonly isAuthenticated = computed(() => this.currentUser() !== null);
 
   // Role and organization signals
   readonly userRole = computed<UserRole | null>(() => {
@@ -44,6 +44,20 @@ export class AuthService {
 
   constructor() {
     this.loadUserFromStorage();
+  }
+
+  /**
+   * Token-based auth state: some backends return tokens only (no user object),
+   * so auth derives from a present, non-expired access token — not from
+   * currentUser (which stays null until /auth/me is fetched).
+   */
+  isAuthenticated(): boolean {
+    return !!this.getAccessToken() && !this.isTokenExpired();
+  }
+
+  /** Last email used to log in — prefilled in the re-login dialog. */
+  getLastEmail(): string {
+    return localStorage.getItem(this.EMAIL_KEY) ?? '';
   }
 
   /**
@@ -67,7 +81,7 @@ export class AuthService {
   private loadUserFromStorage(): void {
     const userJson = localStorage.getItem(this.STORAGE_KEY);
 
-    if (userJson) {
+    if (userJson && userJson !== 'undefined' && userJson !== 'null') {
       try {
         const user = JSON.parse(userJson) as User;
 
@@ -79,6 +93,8 @@ export class AuthService {
   }
 
   login(dto: LoginDto): Observable<AuthResponse> {
+    localStorage.setItem(this.EMAIL_KEY, dto.email);
+
     return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, dto).pipe(
       tap((response) => {
         this.handleAuthSuccess(response);
@@ -166,8 +182,14 @@ export class AuthService {
   private handleAuthSuccess(response: AuthResponse): void {
     localStorage.setItem(this.TOKEN_KEY, response.access_token);
     localStorage.setItem(this.REFRESH_TOKEN_KEY, response.refresh_token);
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(response.user));
-    this.currentUser.set(response.user);
+
+    // Only persist a user when the response carries one (some backends return
+    // tokens only); storing JSON.stringify(undefined) === "undefined" would
+    // make the next loadUserFromStorage() throw and wipe the session.
+    if (response.user) {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(response.user));
+      this.currentUser.set(response.user);
+    }
   }
 
   private handleAuthError(error: unknown): Observable<never> {

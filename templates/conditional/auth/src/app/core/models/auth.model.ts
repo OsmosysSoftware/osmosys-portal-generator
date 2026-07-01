@@ -25,7 +25,10 @@ export interface JwtPayload {
 export interface AuthResponse {
   access_token: string;
   refresh_token: string;
-  user: User;
+  // Some backends (e.g. the Osmosys api-generator) return tokens only on
+  // login/refresh and expose the user via /auth/me. Optional so token
+  // persistence never depends on it.
+  user?: User;
   expires_in: number;
 }
 

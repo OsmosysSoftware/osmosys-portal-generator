@@ -1,4 +1,6 @@
 export const environment = {
   production: false,
-  apiUrl: '<%= apiUrl %>',
+  // The paired osmosys-api-generator serves under /api/v1 (URI versioning).
+  // Adjust if your backend uses a different prefix.
+  apiUrl: '<%= apiUrl %>/api/v1',
 };
